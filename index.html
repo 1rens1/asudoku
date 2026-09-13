@@ -6,28 +6,28 @@
     <style>
       @font-face {
         font-family: "Comic Neue";
-        src: url("./fonts/ComicNeue-Regular.ttf") format("truetype");
+        src: url("./fonts/comicneue-regular.ttf") format("truetype");
         font-weight: 400;
         font-style: normal;
       }
 
       @font-face {
         font-family: "Comic Neue";
-        src: url("./fonts/ComicNeue-Bold.ttf") format("truetype");
+        src: url("./fonts/comicneue-bold.ttf") format("truetype");
         font-weight: 700;
         font-style: normal;
       }
 
       @font-face {
         font-family: "Comic Neue";
-        src: url("./fonts/ComicNeue-Light.ttf") format("truetype");
+        src: url("./fonts/comicneue-light.ttf") format("truetype");
         font-weight: 300;
         font-style: normal;
       }
 
       @font-face {
         font-family: "Comic Neue";
-        src: url("./fonts/ComicNeue-Italic.ttf") format("truetype");
+        src: url("./fonts/comicneue-italic.ttf") format("truetype");
         font-weight: 400;
         font-style: italic;
       }
@@ -531,7 +531,7 @@
           await new Promise((r) => setTimeout(r, 0));
 
           // Fetch font file hosted on the server
-          const resp = await fetch("./fonts/ComicNeue-Regular.ttf");
+          const resp = await fetch("./fonts/comicneue-regular.ttf");
           if (resp.ok) {
             const buffer = await resp.arrayBuffer();
             const bytes = new Uint8Array(buffer);
