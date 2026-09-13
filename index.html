@@ -1,0 +1,704 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Sudoku Printables</title>
+    <style>
+      @font-face {
+        font-family: "Comic Neue";
+        src: url("/fonts/ComicNeue-Regular.ttf") format("truetype");
+        font-weight: 400;
+        font-style: normal;
+      }
+
+      @font-face {
+        font-family: "Comic Neue";
+        src: url("/fonts/ComicNeue-Bold.ttf") format("truetype");
+        font-weight: 700;
+        font-style: normal;
+      }
+
+      @font-face {
+        font-family: "Comic Neue";
+        src: url("/fonts/ComicNeue-Light.ttf") format("truetype");
+        font-weight: 300;
+        font-style: normal;
+      }
+
+      @font-face {
+        font-family: "Comic Neue";
+        src: url("/fonts/ComicNeue-Italic.ttf") format("truetype");
+        font-weight: 400;
+        font-style: italic;
+      }
+      :root {
+        color-scheme: light;
+      }
+      body {
+        margin: 0;
+        padding: 24px;
+        font-family: "Comic Neue", Arial, sans-serif;
+        background: white;
+        color: black;
+        line-height: 1.4;
+      }
+      .controls {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        max-width: 600px;
+        margin: auto;
+      }
+      .top-controls {
+        display: flex;
+        align-items: end;
+        gap: 16px;
+      }
+      .top-controls > label {
+        flex: 1;
+      }
+      @media (max-width: 520px) {
+        .top-controls {
+          flex-direction: column;
+          align-items: stretch;
+        }
+      }
+      label {
+        display: grid;
+        gap: 6px;
+        font-size: 14px;
+        font-weight: bold;
+      }
+      input[type="number"],
+      select {
+        width: 100%;
+        max-width: 220px;
+        padding: 8px 10px;
+        font: inherit;
+        border: 1px solid #bbb;
+        border-radius: 8px;
+        background: white;
+      }
+      .actions {
+        display: flex;
+        gap: 16px;
+      }
+      .actions > :first-child {
+        flex: 1;
+      }
+      button {
+        padding: 9px 20px;
+        font: inherit;
+        border: 1px solid #111;
+        border-radius: 8px;
+        background: white;
+        cursor: pointer;
+        font-weight: bold;
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      button:hover:not(:disabled) {
+        background: #f0f0f0;
+      }
+
+      .difficulty-box {
+        display: flex;
+        gap: 12px;
+        flex-direction: column;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #bbb;
+      }
+      .difficulty-box label {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-weight: normal;
+        cursor: pointer;
+      }
+
+      #progress-container {
+        display: none;
+        width: 100%;
+        margin-top: 8px;
+      }
+      #progress-bar-bg {
+        width: 100%;
+        height: 8px;
+        background: #eee;
+        border-radius: 4px;
+        overflow: hidden;
+      }
+      #progress-bar-fill {
+        width: 0%;
+        height: 100%;
+        background: #000;
+        transition: width 0.1s linear;
+      }
+      #status-text {
+        font-size: 12px;
+        margin-top: 4px;
+        color: #666;
+        font-weight: normal;
+      }
+      #status-boards,
+      #status-pages {
+        min-height: 16px;
+      }
+      /* Hide by default */
+      #custom-range {
+        display: none;
+      }
+      .difficulty-box:has(input[value="custom"]:checked) #custom-range {
+        display: flex !important;
+        align-items: center;
+        gap: 8px;
+      }
+      #custom-range label {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    </style>
+  </head>
+  <body>
+    <h1 style="text-align: center; font-size: 64px">asudoku</h1>
+    <div class="controls">
+      <div class="top-controls">
+        <label
+          >Pages
+          <input id="pages" type="number" min="1" max="100" value="1" />
+        </label>
+
+        <label
+          >Style
+          <select id="style">
+            <option value="default" selected>Default (numbers)</option>
+            <option value="dots">Dots</option>
+            <option value="empty">Empty</option>
+          </select>
+        </label>
+      </div>
+
+      <div>
+        <label>Difficulty</label>
+        <div style="height: 6px"></div>
+        <div class="difficulty-box">
+          <label><input type="radio" name="diff" value="easy" /> Easy</label>
+          <label
+            ><input type="radio" name="diff" value="medium" /> Medium</label
+          >
+          <label
+            ><input type="radio" name="diff" value="hard" checked /> Hard</label
+          >
+          <label
+            ><input type="radio" name="diff" value="expert" /> Expert</label
+          >
+          <label
+            ><input type="radio" name="diff" value="custom" /> Custom</label
+          >
+          <div id="custom-range">
+            <label
+              >Min Clues
+              <input id="clue-min" type="number" min="17" max="80" value="26" />
+            </label>
+            <label
+              >Max Clues
+              <input id="clue-max" type="number" min="17" max="80" value="36" />
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="downloadBtn" onclick="go()">Download PDF</button>
+        <button
+          id="printBtn"
+          onclick="go('print')"
+          style="display: grid; place-items: center"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="1em"
+            height="1em"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-printer-icon lucide-printer"
+          >
+            <path
+              d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"
+            />
+            <path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6" />
+            <rect x="6" y="14" width="12" height="8" rx="1" />
+          </svg>
+        </button>
+      </div>
+
+      <div id="progress-container">
+        <div id="progress-bar-bg">
+          <div id="progress-bar-fill"></div>
+        </div>
+        <div id="status-text">
+          <div id="status-boards">Ready</div>
+          <div id="status-pages"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+      // ── Difficulty Settings ───────────────────────────────────────────────────
+      const DIFF_SETTINGS = {
+        easy: [45, 55],
+        medium: [36, 44],
+        hard: [26, 36],
+        expert: [21, 25],
+      };
+
+      Object.entries(DIFF_SETTINGS).forEach(([key, [min, max]]) => {
+        const input = document.querySelector(`input[value="${key}"]`);
+        if (input) input.parentElement.append(` (${min}-${max} clues)`);
+      });
+
+      // ── Layout constants ────────────────────────────────────────────────────────
+      const COLS = 5,
+        ROWS = 7,
+        CELL = 33,
+        BOARD = 297,
+        STEP = 333,
+        X0 = 25.5,
+        Y0 = 40.5;
+      const DX = [
+        0, 10.5527, 8.6484, 8.9121, 9.2344, 8.3701, 8.3701, 9.4102, 8.7803,
+        8.5312,
+      ];
+      const DY = 26.25;
+      const CROSSES = [
+        [0, 0, 0.75],
+        [0, 2, 0.45],
+        [2, 0, 0.45],
+        [2, 2, 0.25],
+        [0, 1, 0.45],
+        [0, 3, 0.75],
+        [2, 1, 0.25],
+        [2, 3, 0.45],
+        [1, 0, 0.45],
+        [1, 2, 0.25],
+        [3, 0, 0.75],
+        [3, 2, 0.45],
+        [1, 1, 0.25],
+        [1, 3, 0.45],
+        [3, 1, 0.45],
+        [3, 3, 0.75],
+      ];
+
+      // ── Difficulty Handler ──────────────────────────────────────────────────────
+
+      function getClueRange() {
+        const diff = document.querySelector('input[name="diff"]:checked').value;
+        if (DIFF_SETTINGS[diff]) return DIFF_SETTINGS[diff];
+
+        if (diff === "custom") {
+          return [
+            parseInt(document.getElementById("clue-min").value) || 17,
+            parseInt(document.getElementById("clue-max").value) || 80,
+          ];
+        }
+        return DIFF_SETTINGS.hard;
+      }
+
+      // ── Web Worker Generation Logic ─────────────────────────────────────────────
+      const workerString = `
+        const BOX = Array.from({ length: 9 }, (_, r) =>
+          Array.from({ length: 9 }, (_, c) => ((r / 3) | 0) * 3 + ((c / 3) | 0))
+        );
+
+        function popcount(x) {
+          let n = 0;
+          for (; x; x &= x - 1) n++;
+          return n;
+        }
+
+        function countSolutions(board) {
+          const grid = board.map((r) =>[...r]);
+          const R = new Uint16Array(9), C = new Uint16Array(9), B = new Uint16Array(9), empty =[];
+          for (let r = 0; r < 9; r++)
+            for (let c = 0; c < 9; c++) {
+              const v = grid[r][c];
+              if (!v) empty.push(r * 9 + c);
+              else {
+                const b = 1 << v;
+                R[r] |= b; C[c] |= b; B[BOX[r][c]] |= b;
+              }
+            }
+          let changed = true;
+          while (changed) {
+            changed = false;
+            for (let i = empty.length - 1; i >= 0; i--) {
+              const r = (empty[i] / 9) | 0, c = empty[i] % 9;
+              const mask = (R[r] | C[c] | B[BOX[r][c]]) & 0x3fe;
+              if (popcount(mask) === 8) {
+                let v = 1;
+                while (mask & (1 << v)) v++;
+                const b = 1 << v;
+                R[r] |= b; C[c] |= b; B[BOX[r][c]] |= b; grid[r][c] = v;
+                empty.splice(i, 1); changed = true;
+              }
+            }
+          }
+          if (!empty.length) return 1;
+          function bt(idx, n) {
+            if (idx === empty.length) return n + 1;
+            let best = idx, min = 10;
+            for (let i = idx; i < empty.length; i++) {
+              const r = (empty[i] / 9) | 0, c = empty[i] % 9;
+              const cands = 9 - popcount((R[r] | C[c] | B[BOX[r][c]]) & 0x3fe);
+              if (cands < min) { min = cands; best = i; if (min <= 1) break; }
+            }[empty[idx], empty[best]] = [empty[best], empty[idx]];
+            const rc = empty[idx], r = (rc / 9) | 0, c = rc % 9, mask = R[r] | C[c] | B[BOX[r][c]];
+            for (let v = 1; v <= 9; v++) {
+              const b = 1 << v;
+              if (!(mask & b)) {
+                R[r] |= b; C[c] |= b; B[BOX[r][c]] |= b;
+                n = bt(idx + 1, n);
+                R[r] &= ~b; C[c] &= ~b; B[BOX[r][c]] &= ~b;
+                if (n > 1) break;
+              }
+            }
+            return n;
+          }
+          return bt(0, 0);
+        }
+
+        function shuffle(a) {
+          for (let i = a.length - 1; i > 0; i--) {
+            const j = (Math.random() * (i + 1)) | 0;[a[i], a[j]] = [a[j], a[i]];
+          }
+          return a;
+        }
+
+        function makeFullBoard() {
+          const board = Array.from({ length: 9 }, () => new Array(9).fill(0));
+          const R = new Uint16Array(9), C = new Uint16Array(9), B = new Uint16Array(9);
+          function fill(r, c) {
+            if (r === 9) return true;
+            if (c === 9) return fill(r + 1, 0);
+            const box = BOX[r][c], mask = R[r] | C[c] | B[box];
+            for (const v of shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9])) {
+              const b = 1 << v;
+              if (!(mask & b)) {
+                R[r] |= b; C[c] |= b; B[box] |= b; board[r][c] = v;
+                if (fill(r, c + 1)) return true;
+                R[r] &= ~b; C[c] &= ~b; B[box] &= ~b; board[r][c] = 0;
+              }
+            }
+            return false;
+          }
+          fill(0, 0);
+          return board;
+        }
+
+        function makePuzzle(target) {
+          const board = makeFullBoard();
+          const pairs =[];
+          for (let r = 0; r < 4; r++)
+            for (let c = 0; c < 9; c++) pairs.push([[r, c],[8 - r, 8 - c]]);
+          for (let c = 0; c < 4; c++) pairs.push([[4, c],[4, 8 - c]]);
+          pairs.push([[4, 4],[4, 4]]);
+          shuffle(pairs);
+          let clues = 81;
+          for (const [[r1, c1], [r2, c2]] of pairs) {
+            const n = r1 === r2 && c1 === c2 ? 1 : 2;
+            if (clues - n < target) continue;
+            const b1 = board[r1][c1], b2 = board[r2][c2];
+            board[r1][c1] = 0; board[r2][c2] = 0;
+            if (countSolutions(board) !== 1) {
+              board[r1][c1] = b1; board[r2][c2] = b2;
+            } else clues -= n;
+          }
+          const cells = shuffle([...Array(81).keys()].filter((i) => board[(i / 9) | 0][i % 9]));
+          for (const i of cells) {
+            if (clues <= target) break;
+            const r = (i / 9) | 0, c = i % 9, b = board[r][c];
+            board[r][c] = 0;
+            if (countSolutions(board) !== 1) board[r][c] = b;
+            else clues--;
+          }
+          return board;
+        }
+
+        self.onmessage = function(e) {
+          const { idx, target } = e.data;
+          self.postMessage({ idx, board: makePuzzle(target) });
+        };
+      `;
+
+      // ── Entry Point ─────────────────────────────────────────────────────────────
+      async function go(action) {
+        const downloadBtn = document.getElementById("downloadBtn");
+        const printBtn = document.getElementById("printBtn");
+        const pages = Math.max(1, +document.getElementById("pages").value || 1);
+        const style = document.getElementById("style").value;
+        const [cMin, cMax] = getClueRange();
+        const progressCont = document.getElementById("progress-container");
+        const progressBar = document.getElementById("progress-bar-fill");
+        const statusBoards = document.getElementById("status-boards");
+        const statusPages = document.getElementById("status-pages");
+
+        downloadBtn.disabled = true;
+        printBtn.disabled = true;
+        progressCont.style.display = "block";
+        statusBoards.textContent = "Warming up Web Workers...";
+        statusPages.textContent = "";
+        progressBar.style.width = "0%";
+
+        await document.fonts.ready;
+
+        const totalBoards = pages * COLS * ROWS;
+        const targets = Array.from(
+          { length: totalBoards },
+          () => cMin + ((Math.random() * (cMax - cMin + 1)) | 0),
+        );
+        const allBoards = new Array(totalBoards);
+
+        const workerUrl = URL.createObjectURL(
+          new Blob([workerString], { type: "application/javascript" }),
+        );
+        const numWorkers = Math.min(12, navigator.hardwareConcurrency || 4);
+        const workers = [];
+
+        // ── Parallel Board Generation ─────────────────────────────────────────────
+        await new Promise((resolve) => {
+          let activeWorkers = numWorkers;
+          let boardsDone = 0;
+          let nextJob = 0;
+
+          function onWorkerMessage(e) {
+            const { idx, board } = e.data;
+            allBoards[idx] = board;
+            boardsDone++;
+
+            if (boardsDone % 5 === 0 || boardsDone === totalBoards) {
+              const pct = (boardsDone / totalBoards) * 80;
+              progressBar.style.width = pct + "%";
+              statusBoards.textContent = `Generating boards: ${boardsDone} / ${totalBoards}`;
+            }
+
+            if (nextJob < totalBoards) {
+              this.postMessage({ idx: nextJob, target: targets[nextJob] });
+              nextJob++;
+            } else {
+              this.terminate();
+              activeWorkers--;
+              if (activeWorkers === 0) resolve();
+            }
+          }
+
+          for (let i = 0; i < numWorkers; i++) {
+            const w = new Worker(workerUrl);
+            w.onmessage = onWorkerMessage;
+            workers.push(w);
+
+            if (nextJob < totalBoards) {
+              w.postMessage({ idx: nextJob, target: targets[nextJob] });
+              nextJob++;
+            } else {
+              w.terminate();
+              activeWorkers--;
+              if (activeWorkers === 0) resolve();
+            }
+          }
+        });
+
+        URL.revokeObjectURL(workerUrl);
+        statusBoards.textContent = "Boards generated!";
+
+        // ── Vector PDF Rendering ──────────────────────────────────────────────────
+        const { jsPDF } = window.jspdf;
+        // compress: true ensures vector paths (dots/crosses) are deflated to keep file size small
+        const doc = new jsPDF({ unit: "mm", format: "a4", compress: true });
+
+        // Map original 1684px width to 210mm A4 width
+        const K = 210 / 1684;
+
+        try {
+          statusPages.textContent = "Loading Comic Neue font...";
+          await new Promise((r) => setTimeout(r, 0));
+
+          // Fetch font file hosted on the server
+          const resp = await fetch("./fonts/ComicNeue-Regular.ttf");
+          if (resp.ok) {
+            const buffer = await resp.arrayBuffer();
+            const bytes = new Uint8Array(buffer);
+            let binary = "";
+
+            // Chunked conversion to avoid "Maximum call stack size exceeded"
+            const chunkSize = 8192;
+            for (let i = 0; i < bytes.length; i += chunkSize) {
+              binary += String.fromCharCode.apply(
+                null,
+                bytes.subarray(i, i + chunkSize),
+              );
+            }
+
+            doc.addFileToVFS("ComicNeue.ttf", btoa(binary));
+            doc.addFont("ComicNeue.ttf", "ComicNeue", "normal");
+            doc.setFont("ComicNeue", "normal");
+          } else {
+            doc.setFont("helvetica", "normal");
+          }
+        } catch (e) {
+          console.error("Font loading failed, falling back to Helvetica", e);
+          doc.setFont("helvetica", "normal");
+        }
+
+        // Equivalent of canvas 30px scaled to jsPDF points (1pt = 1/72 inch)
+        doc.setFontSize(30 * K * 2.834645669);
+
+        for (let p = 0; p < pages; p++) {
+          if (p > 0) doc.addPage();
+          statusPages.textContent = `Rendering vector page ${p + 1} / ${pages}...`;
+          progressBar.style.width = 80 + ((p + 1) / pages) * 20 + "%";
+          await new Promise((r) => setTimeout(r, 0));
+
+          const pageStart = p * COLS * ROWS;
+
+          for (let i = 0; i < COLS * ROWS; i++) {
+            const bx = X0 + STEP * (i % COLS),
+              by = Y0 + STEP * ((i / COLS) | 0);
+            const bd = allBoards[pageStart + i];
+
+            // Render alignment crosses
+            doc.setLineWidth(2 * K);
+            for (const [cxi, cyi, op] of CROSSES) {
+              // Convert alpha to solid gray value against white background
+              const gray = Math.round(255 * (1 - op));
+              doc.setDrawColor(gray, gray, gray);
+
+              const cx = (bx + 2 + 99 * cxi) * K;
+              const cy = (by + 2 + 99 * cyi) * K;
+
+              doc.line(cx, cy - 4 * K, cx, cy + 4 * K);
+              doc.line(cx - 4 * K, cy, cx + 4 * K, cy);
+            }
+
+            // Render grid intersection dots (#CFCFCF = rgb 207, 207, 207)
+            doc.setFillColor(207, 207, 207);
+            doc.setDrawColor(207, 207, 207);
+            for (let ry = 0; ry <= 9; ry++) {
+              for (let rx = 0; rx <= 9; rx++) {
+                doc.circle(
+                  (bx + 2 + CELL * rx) * K,
+                  (by + 2 + CELL * ry) * K,
+                  2 * K,
+                  "F",
+                );
+              }
+            }
+
+            // Render clue values according to the selected style.
+            if (style === "default") {
+              // rgba(0,0,0,0.3) = rgb 178, 178, 178 on white background
+              doc.setTextColor(178, 178, 178);
+              for (let r = 0; r < 9; r++) {
+                for (let c = 0; c < 9; c++) {
+                  const v = bd[r][c];
+                  if (v) {
+                    doc.text(
+                      v.toString(),
+                      (bx + CELL * c + DX[v]) * K,
+                      (by + CELL * r + DY) * K,
+                      { baseline: "alphabetic" },
+                    );
+                  }
+                }
+              }
+            } else if (style === "dots") {
+              // Render the clue as a centered dice-style 1-9 pip pattern.
+              // The Sudoku cell/grid geometry is unchanged; only the clue display changes.
+              doc.setFillColor(178, 178, 178);
+              const pipPatterns = {
+                1: [[1, 1]],
+                2: [[0, 1], [2, 1]],
+                3: [[1, 0], [1, 1], [1, 2]],
+                4: [[0, 0], [2, 0], [0, 2], [2, 2]],
+                5: [[0, 0], [2, 0], [1, 1], [0, 2], [2, 2]],
+                6: [[0, 0], [0, 1], [0, 2], [2, 0], [2, 1], [2, 2]],
+                7: [[0, 0], [0, 1], [0, 2], [1, 1], [2, 0], [2, 1], [2, 2]],
+                8: [[0, 0], [1, 0], [2, 0], [0, 1], [2, 1], [0, 2], [1, 2], [2, 2]],
+                9: [[0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [2, 1], [0, 2], [1, 2], [2, 2]],
+              };
+              const pipR = 1.6 * K;
+              // Keep the 3x3 pip field in the same clue area, shifted 1 px up and left from true center.
+              const pipCenter = 15.5 * K;
+              const pipStep = 7.5 * K;
+              const pipInset = pipCenter - pipStep;
+              for (let r = 0; r < 9; r++) {
+                for (let c = 0; c < 9; c++) {
+                  const v = bd[r][c];
+                  if (!v) continue;
+                  const cx = (bx + CELL * c + 2) * K;
+                  const cy = (by + CELL * r + 2) * K;
+                  for (const [px, py] of pipPatterns[v]) {
+                    doc.circle(cx + pipInset + px * pipStep, cy + pipInset + py * pipStep, pipR, "F");
+                  }
+                }
+              }
+            }
+            // "empty" intentionally renders no clue values.
+          }
+        }
+
+        statusPages.textContent = `Finalizing PDF...`;
+        progressBar.style.width = `100%`;
+        await new Promise((r) => setTimeout(r, 50));
+
+        if (action === "print") {
+          const pdfBlob = doc.output("blob");
+          const pdfUrl = URL.createObjectURL(pdfBlob);
+          const printFrame = document.createElement("iframe");
+
+          printFrame.style.position = "fixed";
+          printFrame.style.right = "0";
+          printFrame.style.bottom = "0";
+          printFrame.style.width = "0";
+          printFrame.style.height = "0";
+          printFrame.style.border = "0";
+          printFrame.src = pdfUrl;
+          document.body.appendChild(printFrame);
+
+          setTimeout(() => {
+            try {
+              printFrame.contentWindow.focus();
+              printFrame.contentWindow.print();
+            } catch (e) {
+              console.error("Print failed, downloading instead", e);
+              doc.save(`sudoku-${pages}-pages.pdf`);
+            }
+            setTimeout(() => {
+              URL.revokeObjectURL(pdfUrl);
+              document.body.removeChild(printFrame);
+            }, 2000);
+          }, 1000);
+        } else {
+          doc.save(`sudoku-${pages}-pages.pdf`);
+        }
+
+        statusBoards.textContent = "Finished!";
+        statusPages.textContent = "";
+        downloadBtn.disabled = false;
+        printBtn.disabled = false;
+
+        setTimeout(() => {
+          progressCont.style.display = "none";
+          progressBar.style.width = "0%";
+        }, 3000);
+      }
+    </script>
+  </body>
+</html>
